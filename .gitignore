@@ -5,6 +5,7 @@ usStock/
 
 # 排除除錯用檔案
 debug-impress.html
+impress.js
 
 # 排除圖片資料夾
 pictures/

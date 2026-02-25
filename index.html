@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KMU AI 教學應用工作坊 — 2026/03</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --accent: #00f0ff;
+            --sub: #f59e0b;
+            --text: #e8e8ed;
+            --muted: rgba(232, 232, 237, 0.5);
+            --glass: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 6px 16px;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            background: rgba(0, 240, 255, 0.05);
+        }
+
+        h1 {
+            font-weight: 900;
+            font-size: 56px;
+            line-height: 1.15;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        h1 .hi {
+            color: var(--accent);
+            text-shadow: 0 0 40px rgba(0, 240, 255, 0.35);
+        }
+
+        h1 .hi-sub {
+            color: var(--sub);
+            text-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: var(--muted);
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .cards {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 900px;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 36px 32px;
+            width: 260px;
+            text-decoration: none;
+            color: var(--text);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 240, 255, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--sub));
+            transform: scaleX(0);
+            transition: transform 0.4s;
+            transform-origin: left;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card .num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .card .title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card .desc {
+            font-size: 16px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .footer {
+            margin-top: 48px;
+            font-size: 14px;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="tag">KMU AI Workshop 2026/03</div>
+    <h1><span class="hi">生成式 AI</span><br>教學應用<span class="hi-sub">工作坊</span></h1>
+    <p class="subtitle">講師：廖正雄 Shoung Liao</p>
+
+    <div class="cards">
+        <a class="card" href="Day01-Presentation.html">
+            <div class="num">Day 01</div>
+            <div class="title">認識 AI 與實作</div>
+            <div class="desc">AI 趨勢 · Prompt · Google AI Studio · WBC App 實作</div>
+        </a>
+        <a class="card" href="Day02-Presentation.html">
+            <div class="num">Day 02</div>
+            <div class="title">規劃的力量</div>
+            <div class="desc">MRD · PRD · 上下文工程 · Human-in-the-loop</div>
+        </a>
+        <a class="card" href="Day03-Presentation.html">
+            <div class="num">Day 03</div>
+            <div class="title">部署與展示</div>
+            <div class="desc">成果展示 · GitHub · Antigravity · 終極工作流</div>
+        </a>
+    </div>
+
+    <p class="footer">高雄醫學大學 × 生成式 AI 教學應用工作坊</p>
+</body>
+
+</html>
