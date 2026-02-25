@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920">
+    <title>生成式 AI 教學應用工作坊 — Day 03</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --bg-deep: #0a0a0f;
+            --accent: #00f0ff;
+            --accent-glow: rgba(0, 240, 255, 0.35);
+            --sub: #f59e0b;
+            --sub-glow: rgba(245, 158, 11, 0.30);
+            --text-primary: #e8e8ed;
+            --text-muted: rgba(232, 232, 237, 0.50);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --font-title: 'Noto Sans TC', sans-serif;
+            --font-body: 'Noto Sans TC', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Space Grotesk', monospace;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none
+        }
+
+        .impress-enabled .step {
+            opacity: 0.12;
+            transition: opacity 0.8s ease
+        }
+
+        .impress-enabled .step.active {
+            opacity: 1
+        }
+
+        .step {
+            width: 1200px;
+            min-height: 700px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 80px;
+            position: relative
+        }
+
+        #progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--sub));
+            z-index: 9999;
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1)
+        }
+
+        #page-counter {
+            position: fixed;
+            bottom: 28px;
+            right: 48px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--text-muted);
+            z-index: 9999;
+            letter-spacing: 2px
+        }
+
+        #page-counter .cur {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 20px
+        }
+
+        #nav-dots {
+            position: fixed;
+            right: 28px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 9999
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            outline: none
+        }
+
+        .nav-dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+            transform: scale(1.4)
+        }
+
+        .slide-title {
+            font-family: var(--font-title);
+            font-weight: 900;
+            font-size: 76px;
+            line-height: 1.15;
+            letter-spacing: -1px;
+            margin-bottom: 36px;
+            position: relative
+        }
+
+        .hi {
+            color: var(--accent);
+            text-shadow: 0 0 40px var(--accent-glow)
+        }
+
+        .hi-sub {
+            color: var(--sub);
+            text-shadow: 0 0 30px var(--sub-glow)
+        }
+
+        .slide-subtitle {
+            font-family: var(--font-title);
+            font-weight: 500;
+            font-size: 30px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            line-height: 1.5
+        }
+
+        .slide-body {
+            font-family: var(--font-body);
+            font-weight: 400;
+            font-size: 28px;
+            line-height: 1.8;
+            color: var(--text-primary)
+        }
+
+        .slide-body li {
+            list-style: none;
+            padding-left: 28px;
+            position: relative;
+            margin-bottom: 18px
+        }
+
+        .slide-body li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 14px;
+            width: 10px;
+            height: 10px;
+            border: 2px solid var(--accent);
+            border-radius: 2px;
+            transform: rotate(45deg)
+        }
+
+        .quote-text {
+            font-family: var(--font-title);
+            font-weight: 300;
+            font-size: 26px;
+            font-style: italic;
+            color: var(--sub);
+            border-left: 3px solid var(--sub);
+            padding-left: 24px;
+            margin-top: 20px;
+            opacity: 0.9
+        }
+
+        .tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 6px 16px;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            background: rgba(0, 240, 255, 0.05)
+        }
+
+        .speaker-name {
+            font-family: var(--font-mono);
+            font-size: 20px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            margin-top: 8px
+        }
+
+        .kw {
+            color: var(--accent);
+            font-weight: 700
+        }
+
+        .kw-sub {
+            color: var(--sub);
+            font-weight: 700
+        }
+
+        .deco-line {
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+            margin-bottom: 32px;
+            border-radius: 2px
+        }
+
+        .deco-grid {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 400px;
+            background-image: linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+            pointer-events: none
+        }
+
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            opacity: 0.25
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 40px 48px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.3), transparent)
+        }
+
+        .compare-row {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px
+        }
+
+        .compare-block {
+            flex: 1;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 36px 40px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .compare-block.left::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent)
+        }
+
+        .compare-block.right::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--sub)
+        }
+
+        .compare-label {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 16px
+        }
+
+        .compare-block.left .compare-label {
+            color: var(--accent)
+        }
+
+        .compare-block.right .compare-label {
+            color: var(--sub)
+        }
+
+        .compare-text {
+            font-size: 24px;
+            line-height: 1.7;
+            color: var(--text-primary)
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 24px
+        }
+
+        .feature-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 28px 32px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s
+        }
+
+        .feature-item:hover {
+            border-color: rgba(0, 240, 255, 0.25)
+        }
+
+        .feature-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--sub));
+            transform: scaleX(0);
+            transition: transform 0.4s ease
+        }
+
+        .feature-item:hover::after {
+            transform: scaleX(1)
+        }
+
+        .feature-num {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 8px
+        }
+
+        .feature-text {
+            font-size: 22px;
+            line-height: 1.5
+        }
+
+        .big-answer {
+            font-family: var(--font-title);
+            font-weight: 900;
+            font-size: 96px;
+            background: linear-gradient(135deg, var(--accent), var(--sub));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-top: 12px;
+            line-height: 1.2
+        }
+
+        #slide-cover .slide-title {
+            font-size: 88px;
+            line-height: 1.1
+        }
+
+        /* workflow pipeline */
+        .workflow-row {
+            display: flex;
+            gap: 20px;
+            margin-top: 24px;
+            justify-content: center;
+            align-items: stretch
+        }
+
+        .workflow-step {
+            text-align: center;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 28px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center
+        }
+
+        .workflow-step .icon {
+            font-size: 36px;
+            margin-bottom: 8px
+        }
+
+        .workflow-step .label {
+            font-size: 20px;
+            font-weight: 700
+        }
+
+        .workflow-step .desc {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-top: 6px
+        }
+
+        .workflow-arrow {
+            display: flex;
+            align-items: center;
+            font-size: 28px;
+            color: var(--accent);
+            opacity: 0.6
+        }
+
+        .anim-item {
+            opacity: 0;
+            transform: translateY(40px)
+        }
+
+        .anim-scale {
+            opacity: 0;
+            transform: scale(0.85);
+            filter: blur(6px)
+        }
+
+        .anim-left {
+            opacity: 0;
+            transform: translateX(-60px)
+        }
+
+        .anim-right {
+            opacity: 0;
+            transform: translateX(60px)
+        }
+    </style>
+</head>
+
+<body tabindex="0">
+
+    <canvas id="particle-canvas"></canvas>
+    <div id="progress-bar" style="width:0%"></div>
+    <div id="page-counter"><span class="cur">01</span> / 9</div>
+    <div id="nav-dots"></div>
+
+    <div id="impress" data-width="1200" data-height="700" data-transition-duration="1000">
+
+        <!-- SLIDE 01: 封面 — 小組成果展示 -->
+        <div id="s01" class="step" data-x="0" data-y="0" data-z="0" data-scale="1">
+            <div class="glow-orb" style="width:500px;height:500px;background:var(--accent);top:-150px;right:-100px;">
+            </div>
+            <div class="glow-orb" style="width:350px;height:350px;background:var(--sub);bottom:-100px;left:-50px;">
+            </div>
+            <div class="deco-grid"></div>
+            <span class="tag anim-item">Day 03 Workshop</span>
+            <h1 class="slide-title anim-item"><span class="hi">小組成果</span><br>展示</h1>
+            <div class="deco-line anim-item"></div>
+            <ul class="slide-body">
+                <li class="anim-item">你的 App 解決了什麼具體的教學 / 生活問題？<span class="kw">(MRD)</span></li>
+                <li class="anim-item">你的 <span class="kw-sub">PRD 文件</span></li>
+                <li class="anim-item">你與 AI 的<span class="kw">交互過程</span></li>
+            </ul>
+            <p class="speaker-name anim-item" style="margin-top:32px;">講師：廖正雄 Shoung Liao</p>
+        </div>
+
+        <!-- SLIDE 02: 進階學習路徑 + Google Stitch — 向右滑入 -->
+        <div id="s02" class="step" data-x="2000" data-y="0" data-z="0">
+            <div class="glow-orb" style="width:400px;height:400px;background:var(--sub);top:-80px;right:-120px;"></div>
+            <span class="tag anim-item">Advanced Path</span>
+            <h1 class="slide-title anim-item" style="font-size:62px;"><span class="hi-sub">進階學習路徑</span></h1>
+            <div class="deco-line anim-item"></div>
+            <p class="slide-body anim-item" style="font-size:30px;">UI/UX（介面與體驗）能先規劃嗎？</p>
+            <div class="glass-card anim-item" style="margin-top:24px;">
+                <p class="slide-body" style="margin:0;font-size:32px;text-align:center;">
+                    <span class="kw">Google Stitch</span><br>
+                    <span style="font-size:22px;color:var(--text-muted);">用 AI 來設計你的 App 介面</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 03: 什麼是前後端 — Y 軸旋轉 -->
+        <div id="s03" class="step" data-x="4000" data-y="0" data-z="-500" data-rotate-y="30">
+            <div class="glow-orb" style="width:380px;height:380px;background:var(--accent);bottom:-80px;left:-60px;">
+            </div>
+            <span class="tag anim-item">Architecture</span>
+            <h1 class="slide-title anim-item" style="font-size:66px;">什麼是<br>「<span class="hi">前後端</span>」？</h1>
+            <div class="deco-line anim-item"></div>
+            <div class="compare-row">
+                <div class="compare-block left anim-left">
+                    <div class="compare-label">Front-end 前端</div>
+                    <p class="compare-text">餐廳的<span class="kw">裝潢</span>、<span class="kw">菜單</span>、<span
+                            class="kw">服務生</span><br><span style="font-size:20px;color:var(--text-muted);">使用者看得到、摸得到的部分
+                            (HTML/CSS)</span></p>
+                </div>
+                <div class="compare-block right anim-right">
+                    <div class="compare-label">Back-end 後端</div>
+                    <p class="compare-text"><span class="kw-sub">廚房</span>、<span class="kw-sub">冰箱</span>、<span
+                            class="kw-sub">廚師</span><br><span
+                            style="font-size:20px;color:var(--text-muted);">處理資料、邏輯、儲存的地方</span></p>
+                </div>
+            </div>
+            <p class="slide-body anim-item" style="margin-top:24px;font-size:24px;">
+                為什麼要分開？這樣你的 App 才能「<span class="kw">記住</span>」數據，或處理更複雜的計算。
+            </p>
+        </div>
+
+        <!-- SLIDE 04: GitHub — X 軸俯衝 -->
+        <div id="s04" class="step" data-x="6000" data-y="-600" data-z="-200" data-rotate-x="12">
+            <div class="glow-orb" style="width:400px;height:400px;background:var(--sub);top:-80px;right:-100px;"></div>
+            <span class="tag anim-item">GitHub</span>
+            <h1 class="slide-title anim-item" style="font-size:62px;"><span
+                    class="hi">GitHub</span>：<br>你的代碼保險箱<br>與<span class="hi-sub">展示櫃</span></h1>
+            <div class="deco-line anim-item"></div>
+            <ul class="slide-body">
+                <li class="anim-item"><span class="kw">紀錄</span>代碼的每一個版本（不怕改壞）。</li>
+                <li class="anim-item">讓別人<span class="kw-sub">看到</span>你的作品。</li>
+                <li class="anim-item">最重要：它是通往<span class="kw">雲端部署</span>的鑰匙。</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 05: Antigravity — 90° 翻轉 -->
+        <div id="s05" class="step" data-x="8000" data-y="0" data-z="0" data-rotate-y="90">
+            <div class="glow-orb" style="width:450px;height:450px;background:var(--accent);top:-120px;left:-100px;">
+            </div>
+            <span class="tag anim-item">Deployment</span>
+            <h1 class="slide-title anim-item" style="font-size:56px;">認識 <span
+                    class="hi-sub">Antigravity</span>：<br>讓部署像<span class="hi">呼吸</span>一樣簡單</h1>
+            <div class="deco-line anim-item"></div>
+            <ul class="slide-body">
+                <li class="anim-item">以前要讓網頁上線，需要設定伺服器、網域，非常痛苦。</li>
+                <li class="anim-item">Antigravity 是連接 GitHub 與雲端的「<span class="kw">重力消除器</span>」。</li>
+                <li class="anim-item">只要把代碼推到 GitHub，它就會自動幫你把網頁「<span class="kw-sub">飛</span>」上雲端。</li>
+            </ul>
+            <div class="glass-card anim-item" style="margin-top:20px;">
+                <p class="slide-body" style="margin:0;font-size:24px;text-align:center;">
+                    結果：你會得到一個網址（例如 <span class="kw">my-wbc-app.com</span>），任何人都能打開。
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 06: 後端與資料庫 — X 軸仰角 -->
+        <div id="s06" class="step" data-x="10000" data-y="-400" data-z="-600" data-rotate-x="15" data-rotate-y="-10">
+            <div class="glow-orb" style="width:400px;height:400px;background:var(--sub);bottom:-80px;right:-60px;">
+            </div>
+            <span class="tag anim-item">Backend & DB</span>
+            <h1 class="slide-title anim-item" style="font-size:58px;">邁向更強大的應用：<br><span class="hi">後端</span>與<span
+                    class="hi-sub">資料庫</span></h1>
+            <div class="deco-line anim-item"></div>
+            <ul class="slide-body">
+                <li class="anim-item">如果你的 App 需要「<span class="kw">存檔</span>」功能（例如紀錄最高分排行榜）：</li>
+                <li class="anim-item">你需要一個<span class="kw-sub">資料庫 (Database)</span>。</li>
+            </ul>
+            <div class="glass-card anim-item" style="margin-top:20px;">
+                <p class="slide-body" style="margin:0;font-size:24px;">
+                    別擔心！在 2026 年，你只需要對 AI 說：<br>
+                    「幫我加上<span class="kw">後端存檔功能</span>，並連接<span class="kw-sub">資料庫</span>」<br>
+                    AI 會幫你處理複雜的串接。
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 07: 終極工作流 — Y 軸大角度 -->
+        <div id="s07" class="step" data-x="12000" data-y="400" data-z="200" data-rotate-x="-8" data-rotate-y="-35"
+            data-rotate-z="-3">
+            <div class="glow-orb" style="width:420px;height:420px;background:var(--accent);top:-100px;right:-80px;">
+            </div>
+            <span class="tag anim-item">Ultimate Workflow</span>
+            <h1 class="slide-title anim-item" style="font-size:52px;">2026 開發者的<br><span class="hi-sub">終極工作流</span>
+            </h1>
+            <div class="deco-line anim-item"></div>
+            <div class="workflow-row anim-item">
+                <div class="workflow-step">
+                    <div class="icon">🧪</div>
+                    <div class="label"><span class="kw">AI Studio</span></div>
+                    <div class="desc">快速測試想法<br>與 Prompt</div>
+                </div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-step">
+                    <div class="icon">🗃️</div>
+                    <div class="label"><span class="kw-sub">GitHub</span></div>
+                    <div class="desc">儲存代碼<br>管理版本</div>
+                </div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-step">
+                    <div class="icon">🚀</div>
+                    <div class="label"><span class="kw">Deploy</span></div>
+                    <div class="desc">Antigravity / Vercel<br>一鍵發佈</div>
+                </div>
+            </div>
+            <p class="quote-text anim-item" style="margin-top:28px;">
+                這套組合拳，讓一個大學老師能發揮出一個工程團隊的戰鬥力。
+            </p>
+        </div>
+
+        <!-- SLIDE 08: 回顧三日歷程 — 新增回顧頁 -->
+        <div id="s08" class="step" data-x="14000" data-y="0" data-z="500" data-rotate-x="5" data-scale="1.2">
+            <div class="glow-orb" style="width:500px;height:500px;background:var(--sub);top:-150px;left:-120px;"></div>
+            <span class="tag anim-item">Recap</span>
+            <h1 class="slide-title anim-item" style="font-size:62px;">三日<span class="hi">旅程回顧</span></h1>
+            <div class="deco-line anim-item"></div>
+            <div class="feature-grid" style="grid-template-columns:1fr 1fr 1fr;">
+                <div class="feature-item anim-item">
+                    <div class="feature-num">Day 01</div>
+                    <p class="feature-text"><span class="kw">認識 AI</span><br><span
+                            style="font-size:18px;color:var(--text-muted);">Prompt · AI Studio · 初次實作</span></p>
+                </div>
+                <div class="feature-item anim-item">
+                    <div class="feature-num">Day 02</div>
+                    <p class="feature-text"><span class="kw-sub">規劃力量</span><br><span
+                            style="font-size:18px;color:var(--text-muted);">MRD · PRD · HITL 循環</span></p>
+                </div>
+                <div class="feature-item anim-item">
+                    <div class="feature-num">Day 03</div>
+                    <p class="feature-text"><span class="kw">部署上線</span><br><span
+                            style="font-size:18px;color:var(--text-muted);">GitHub · Antigravity · 成果展示</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 09: 結業 — 縮放收尾 -->
+        <div id="s09" class="step" data-x="16000" data-y="0" data-z="-1500" data-rotate-y="-15" data-scale="1.5">
+            <div class="glow-orb" style="width:600px;height:600px;background:var(--accent);top:-200px;right:-150px;">
+            </div>
+            <div class="glow-orb" style="width:400px;height:400px;background:var(--sub);bottom:-150px;left:-100px;">
+            </div>
+            <span class="tag anim-item">Finale</span>
+            <h1 class="slide-title anim-item" style="font-size:72px;">結業：<br>這只是<span class="hi-sub">開始</span></h1>
+            <div class="deco-line anim-item"></div>
+            <div class="glass-card anim-item">
+                <p class="slide-body" style="margin:0;font-size:30px;text-align:center;">
+                    期待 AI 能協助各位老師<br>開發出更棒的<span class="kw">教學工具</span>！
+                </p>
+            </div>
+            <p class="big-answer anim-scale" style="font-size:72px;text-align:center;margin-top:24px;">Thank You 🎉</p>
+        </div>
+
+    </div>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <!-- Impress.js -->
+    <script src="impress.js"></script>
+
+    <script>
+        // PARTICLES
+        (function () {
+            const canvas = document.getElementById('particle-canvas'); const ctx = canvas.getContext('2d'); let particles = []; const N = 55;
+            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight } resize(); window.addEventListener('resize', resize);
+            class P { constructor() { this.reset() } reset() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.size = Math.random() * 2 + 0.5; this.sx = (Math.random() - 0.5) * 0.3; this.sy = (Math.random() - 0.5) * 0.3; this.o = Math.random() * 0.4 + 0.1; this.h = Math.random() > 0.6 ? 185 : 38 } update() { this.x += this.sx; this.y += this.sy; if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset() } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = `hsla(${this.h},100%,65%,${this.o})`; ctx.fill() } }
+            for (let i = 0; i < N; i++)particles.push(new P());
+            function conn() { for (let i = 0; i < particles.length; i++)for (let j = i + 1; j < particles.length; j++) { const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y, d = Math.sqrt(dx * dx + dy * dy); if (d < 140) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(0,240,255,${0.05 * (1 - d / 140)})`; ctx.lineWidth = 0.5; ctx.stroke() } } }
+            function anim() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw() }); conn(); requestAnimationFrame(anim) } anim()
+        })();
+
+        const impressAPI = impress(); impressAPI.init();
+
+        const slideIds = ['s01', 's02', 's03', 's04', 's05', 's06', 's07', 's08', 's09'];
+        const TOTAL = slideIds.length;
+
+        // impress.js 已內建鍵盤導航
+        document.body.focus();
+        document.addEventListener('click', function () { document.body.focus() });
+
+        // NAV DOTS
+        const nd = document.getElementById('nav-dots');
+        slideIds.forEach((id, i) => { const d = document.createElement('button'); d.className = 'nav-dot' + (i === 0 ? ' active' : ''); d.title = 'Slide ' + (i + 1); d.addEventListener('click', () => impressAPI.goto(id)); nd.appendChild(d) });
+
+        // GSAP
+        function animateSlide(el) {
+            const items = el.querySelectorAll('.anim-item'), scales = el.querySelectorAll('.anim-scale'), lefts = el.querySelectorAll('.anim-left'), rights = el.querySelectorAll('.anim-right');
+            const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+            if (items.length > 0) tl.to(items, { opacity: 1, y: 0, duration: 0.8, stagger: 0.15 }, 0.2);
+            if (scales.length > 0) tl.to(scales, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 1, stagger: 0.15, ease: 'back.out(1.4)' }, 0.4);
+            if (lefts.length > 0) tl.to(lefts, { opacity: 1, x: 0, duration: 0.9, stagger: 0.12, ease: 'power2.out' }, 0.5);
+            if (rights.length > 0) tl.to(rights, { opacity: 1, x: 0, duration: 0.9, stagger: 0.12, ease: 'power2.out' }, 0.5);
+            return tl;
+        }
+        function resetSlide(el) {
+            gsap.set(el.querySelectorAll('.anim-item'), { opacity: 0, y: 40 });
+            gsap.set(el.querySelectorAll('.anim-scale'), { opacity: 0, scale: 0.85, filter: 'blur(6px)' });
+            gsap.set(el.querySelectorAll('.anim-left'), { opacity: 0, x: -60 });
+            gsap.set(el.querySelectorAll('.anim-right'), { opacity: 0, x: 60 });
+        }
+
+        const pb = document.getElementById('progress-bar'), pc = document.getElementById('page-counter'), dots = document.querySelectorAll('.nav-dot');
+        slideIds.forEach(id => { const el = document.getElementById(id); if (el) resetSlide(el) });
+        document.addEventListener('impress:stepenter', function (e) {
+            const el = e.target, idx = slideIds.indexOf(el.id);
+            pb.style.width = ((idx + 1) / TOTAL * 100) + '%';
+            pc.innerHTML = `<span class="cur">${String(idx + 1).padStart(2, '0')}</span> / ${TOTAL}`;
+            dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+            animateSlide(el);
+        });
+        document.addEventListener('impress:stepleave', function (e) { resetSlide(e.target) });
+        setTimeout(() => { const f = document.getElementById(slideIds[0]); if (f) animateSlide(f) }, 600);
+    </script>
+</body>
+
+</html>

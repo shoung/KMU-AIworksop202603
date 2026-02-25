@@ -1,0 +1,22 @@
+# 排除股票分析相關檔案
+潤泰全_*
+usStock/
+講師介紹.png
+
+# 排除除錯用檔案
+debug-impress.html
+
+# 排除圖片資料夾
+pictures/
+
+# 排除系統與編輯器檔案
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# 排除 Gemini/Antigravity 設定
+.gemini/
+.agent/
