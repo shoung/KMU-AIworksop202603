@@ -35,6 +35,27 @@
             --font-title: 'Noto Sans TC', sans-serif;
             --font-body: 'Noto Sans TC', sans-serif;
             --font-mono: 'JetBrains Mono', 'Space Grotesk', monospace;
+            --tag-border: rgba(0, 240, 255, 0.3);
+            --tag-bg: rgba(0, 240, 255, 0.05);
+            --nav-dot-bg: rgba(255, 255, 255, 0.15);
+            --feature-hover-border: rgba(0, 240, 255, 0.25);
+        }
+
+        /* Light theme variables */
+        :root[data-theme="light"] {
+            --bg-deep: #f8fafc;
+            --accent: #0284c7;
+            --accent-glow: rgba(2, 132, 199, 0.2);
+            --sub: #ea580c;
+            --sub-glow: rgba(234, 88, 12, 0.2);
+            --text-primary: #0f172a;
+            --text-muted: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(0, 0, 0, 0.03);
+            --tag-border: rgba(2, 132, 199, 0.3);
+            --tag-bg: rgba(2, 132, 199, 0.08);
+            --nav-dot-bg: rgba(0, 0, 0, 0.15);
+            --feature-hover-border: rgba(2, 132, 199, 0.3);
         }
 
         body {
@@ -116,7 +137,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.15);
+            background: var(--nav-dot-bg);
             transition: all 0.3s ease;
             cursor: pointer;
             border: none;
@@ -205,11 +226,11 @@
             letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--accent);
-            border: 1px solid rgba(0, 240, 255, 0.3);
+            border: 1px solid var(--tag-border);
             padding: 6px 16px;
             border-radius: 4px;
             margin-bottom: 24px;
-            background: rgba(0, 240, 255, 0.05)
+            background: var(--tag-bg)
         }
 
         .speaker-name {
@@ -357,7 +378,7 @@
         }
 
         .feature-item:hover {
-            border-color: rgba(0, 240, 255, 0.25)
+            border-color: var(--feature-hover-border)
         }
 
         .feature-item::after {
@@ -473,10 +494,58 @@
             opacity: 0;
             transform: translateX(60px)
         }
+
+        /* ── THEME TOGGLE ── */
+        .theme-toggle {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10000;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.05);
+        }
+            
+        [data-theme="light"] .theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
     </style>
 </head>
 
 <body tabindex="0">
+
+    <button id="theme-toggle" class="theme-toggle" aria-label="切換深淺色模式">
+        <!-- Moon Icon -->
+        <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <!-- Sun Icon -->
+        <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+    </button>
 
     <canvas id="particle-canvas"></canvas>
     <div id="progress-bar" style="width:0%"></div>
@@ -733,6 +802,34 @@
         });
         document.addEventListener('impress:stepleave', function (e) { resetSlide(e.target) });
         setTimeout(() => { const f = document.getElementById(slideIds[0]); if (f) animateSlide(f) }, 600);
+
+        // THEME TOGGLE LOGIC
+        const themeToggle = document.getElementById('theme-toggle');
+        const iconDark = document.getElementById('theme-icon-dark');
+        const iconLight = document.getElementById('theme-icon-light');
+
+        const savedTheme = localStorage.getItem('theme');
+        const currentTheme = savedTheme !== null ? savedTheme : 'dark';
+        
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'light') {
+                iconDark.style.display = 'block';
+                iconLight.style.display = 'none';
+            } else {
+                iconDark.style.display = 'none';
+                iconLight.style.display = 'block';
+            }
+        };
+
+        setTheme(currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const newTheme = isLight ? 'dark' : 'light';
+            setTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
     </script>
 </body>
 

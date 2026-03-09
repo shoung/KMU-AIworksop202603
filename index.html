@@ -27,6 +27,27 @@
             --muted: rgba(232, 232, 237, 0.5);
             --glass: rgba(255, 255, 255, 0.04);
             --border: rgba(255, 255, 255, 0.08);
+            --accent-glow: rgba(0, 240, 255, 0.35);
+            --sub-glow: rgba(245, 158, 11, 0.3);
+            --card-hover-border: rgba(0, 240, 255, 0.3);
+            --tag-bg: rgba(0, 240, 255, 0.05);
+            --tag-border: rgba(0, 240, 255, 0.3);
+        }
+
+        /* Light theme variables */
+        :root[data-theme="light"] {
+            --bg: #f8fafc;
+            --accent: #0284c7;
+            --sub: #ea580c;
+            --text: #0f172a;
+            --muted: rgba(15, 23, 42, 0.6);
+            --glass: rgba(0, 0, 0, 0.03);
+            --border: rgba(0, 0, 0, 0.1);
+            --accent-glow: rgba(2, 132, 199, 0.2);
+            --sub-glow: rgba(234, 88, 12, 0.2);
+            --card-hover-border: rgba(2, 132, 199, 0.3);
+            --tag-bg: rgba(2, 132, 199, 0.08);
+            --tag-border: rgba(2, 132, 199, 0.3);
         }
 
         body {
@@ -49,11 +70,11 @@
             letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--accent);
-            border: 1px solid rgba(0, 240, 255, 0.3);
+            border: 1px solid var(--tag-border);
             padding: 6px 16px;
             border-radius: 4px;
             margin-bottom: 24px;
-            background: rgba(0, 240, 255, 0.05);
+            background: var(--tag-bg);
         }
 
         h1 {
@@ -66,12 +87,12 @@
 
         h1 .hi {
             color: var(--accent);
-            text-shadow: 0 0 40px rgba(0, 240, 255, 0.35);
+            text-shadow: 0 0 40px var(--accent-glow);
         }
 
         h1 .hi-sub {
             color: var(--sub);
-            text-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+            text-shadow: 0 0 30px var(--sub-glow);
         }
 
         .subtitle {
@@ -103,7 +124,7 @@
         }
 
         .card:hover {
-            border-color: rgba(0, 240, 255, 0.3);
+            border-color: var(--card-hover-border);
             transform: translateY(-4px);
         }
 
@@ -152,10 +173,58 @@
             font-family: 'JetBrains Mono', monospace;
             letter-spacing: 1px;
         }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        [data-theme="light"] .theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
     </style>
 </head>
 
 <body>
+    <button id="theme-toggle" class="theme-toggle" aria-label="切換深淺色模式">
+        <!-- Moon Icon (shown in light mode) -->
+        <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <!-- Sun Icon (shown in dark mode) -->
+        <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+    </button>
+
     <div class="tag">KMU AI Workshop 2026/03</div>
     <h1><span class="hi">生成式 AI</span><br>教學應用<span class="hi-sub">工作坊</span></h1>
     <p class="subtitle">講師：廖正雄 Shoung Liao</p>
@@ -179,6 +248,42 @@
     </div>
 
     <p class="footer">高雄醫學大學 × 生成式 AI 教學應用工作坊</p>
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        const iconDark = document.getElementById('theme-icon-dark');
+        const iconLight = document.getElementById('theme-icon-light');
+
+        // Check for saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Use saved theme if exists, otherwise default to dark
+        const currentTheme = savedTheme !== null ? savedTheme : 'dark';
+        
+        // Initialize theme function
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'light') {
+                iconDark.style.display = 'block';
+                iconLight.style.display = 'none';
+            } else {
+                iconDark.style.display = 'none';
+                iconLight.style.display = 'block';
+            }
+        };
+
+        // Set initial theme
+        setTheme(currentTheme);
+
+        // Toggle button click listener
+        themeToggle.addEventListener('click', () => {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const newTheme = isLight ? 'dark' : 'light';
+            
+            setTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
 </body>
 
 </html>
